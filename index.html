@@ -35,7 +35,7 @@
     font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
     background:var(--paper);
     color:var(--ink);
-    padding-bottom:84px;
+    padding-bottom:130px;
   }
 
   header{
@@ -241,7 +241,14 @@
     text-align:center;padding:30px 24px;
   }
   #focus.show{display:flex}
+  #focus.th-Study{background:linear-gradient(160deg,#101A2E 0%,#1B41C4 170%)}
+  #focus.th-Work{background:linear-gradient(160deg,#07262C 0%,#0E7C8C 170%)}
+  #focus.th-Sport{background:linear-gradient(160deg,#2A1204 0%,#E4640E 170%)}
+  #focus.th-Other{background:linear-gradient(160deg,#1D1030 0%,#8A5CC7 170%)}
+  #focus.th-Fixed{background:linear-gradient(160deg,#1A2233 0%,#3D4C66 170%)}
+  #focus.th-Prayer{background:linear-gradient(160deg,#06251B 0%,#128A5E 170%)}
   #focus.rest{background:linear-gradient(160deg,#0B241A 0%,#1F9D66 170%)}
+  .f-emoji{font-size:58px;line-height:1;margin-bottom:8px}
   #fcBreak{margin-top:34px}
   #fcBreak + .f-exit{margin-top:12px}
   #focus .f-label{font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;opacity:.7}
@@ -452,11 +459,13 @@
 <!-- ===== FOCUS MODE ===== -->
 <div id="focus">
   <div class="f-label" id="fcLabel">Focus mode</div>
+  <div class="f-emoji" id="fcEmoji">⏱</div>
   <div class="f-name" id="fcName"></div>
   <div class="f-timer" id="fcTimer">00:00</div>
   <div class="f-range" id="fcRange"></div>
   <div class="bar"><i id="fcBar"></i></div>
   <div class="f-quote" id="fcQuote">Your phone is now a timer, nothing else. Put it down and do the work.</div>
+  <button class="f-exit" id="fcPrayed" onclick="prayedNow()" style="display:none">🕌 I finished praying</button>
   <button class="f-exit" id="fcBreak" onclick="toggleBreak()">☕ Take a 10-min break</button>
   <button class="f-exit" onclick="exitFocus()">Exit focus</button>
 </div>
@@ -783,12 +792,12 @@ function prayerBlocks(d){
   const t = prayerTimes(d);
   return ["Fajr","Dhuhr","Asr","Maghrib","Isha"].map(n=>({
     id:"p-"+n, name:n, start:minToHM(t[n]), end:minToHM(t[n]+25),
-    cat:"Prayer", emoji:"🕌", locked:true
+    cat:"Prayer", emoji:"🕌", locked:true, prayer:true
   }));
 }
 function catLabel(b){
   if(b.cat==="Fixed") return "Fixed · every week";
-  if(b.cat==="Prayer") return "Prayer · auto times";
+  if(b.cat==="Prayer") return "Prayer · at "+fmt12(b.start);
   return b.repeat ? b.cat+" · weekly" : b.cat;
 }
 
@@ -853,6 +862,59 @@ function showView(name){
   if(name==="profile") renderProfile();
 }
 
+/* ---------- prayer interruption + pause bookkeeping ---------- */
+function activePrayer(blocks, nowMin, done){
+  return blocks.find(b => b.prayer && !done[b.id] &&
+    toMin(b.start) <= nowMin && nowMin < toMin(b.start) + 45) || null;
+}
+function getPauses(key){ return store.get("pauses:"+key) || { c:{}, o:null }; }
+function updatePauses(key, blocks, nowMin, done){
+  const P = getPauses(key);
+  const ap = activePrayer(blocks, nowMin, done);
+  const cur = blocks.find(b => !b.prayer && toMin(b.start) <= nowMin && nowMin < toMin(b.end)) || null;
+  const pausable = cur && (cur.cat==="Study" || cur.cat==="Work");
+  if(ap && pausable && !P.o){
+    P.o = { id:cur.id, pr:ap.id, t:Date.now() };
+    store.set("pauses:"+key, P);
+  } else if(P.o && (!ap || ap.id !== P.o.pr || !pausable || (cur && cur.id !== P.o.id))){
+    P.c[P.o.id] = (P.c[P.o.id] || 0) + (Date.now() - P.o.t)/1000;
+    P.o = null;
+    store.set("pauses:"+key, P);
+  }
+  return P;
+}
+function pausedFor(P, id){
+  return (P.c[id] || 0) + (P.o && P.o.id === id ? (Date.now() - P.o.t)/1000 : 0);
+}
+function prayedNow(){
+  const now = new Date(), key = dateKey(now);
+  const nowMin = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
+  const blocks = blocksFor(now);
+  const ap = activePrayer(blocks, nowMin, doneMap(key));
+  if(ap){
+    const d = doneMap(key);
+    d[ap.id] = true;
+    store.set("done:"+key, d);
+  }
+  renderToday();
+  updateFocus();
+}
+/* ---------- focus mode themes + rotating motivation ---------- */
+const FOCUS_THEMES = {
+  Study:  { emoji:"📚", quotes:["Future you is watching. Make him proud.","One page at a time — that's how everything is learned.","The exam doesn't care about your excuses. Neither do you today.","Deep focus now, free mind later."] },
+  Work:   { emoji:"💼", quotes:["Do it once, do it right.","Discipline is choosing what you want most over what you want now.","Finish this, then everything else feels easy.","Quiet work speaks the loudest."] },
+  Sport:  { emoji:"🔥", quotes:["Your body can do it. Convince your mind.","Sweat now, shine later.","No one ever regretted a workout.","One more rep. Always one more."] },
+  Rest:   { emoji:"😌", quotes:["Resting on purpose is part of the plan.","Recharge — the next block needs you fresh.","Breathe. You're doing better than you think.","Real rest = no scrolling."] },
+  Prayer: { emoji:"🕌", quotes:["Everything else can wait.","The best pause of the day.","Go with a calm heart.","Prayer first — then back stronger."] },
+  Other:  { emoji:"✨", quotes:["Whatever it is — give it your full attention.","Small things done well become big things.","Stay with it.","Present beats perfect."] },
+  Fixed:  { emoji:"🎓", quotes:["Show up fully.","Being there is half the victory.","Attention is respect.","Take notes future-you will thank you for."] }
+};
+function themeFor(cat){ return FOCUS_THEMES[cat] || FOCUS_THEMES.Other; }
+function rotQuote(cat){
+  const q = themeFor(cat).quotes;
+  return q[Math.floor(Date.now()/90000) % q.length];
+}
+
 /* ---------- current block + alert on change ---------- */
 let lastBlockId = "__init__";
 function currentBlock(blocks, nowMin){
@@ -889,18 +951,34 @@ function renderToday(){
   const done = doneMap(key);
   const nowMin = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
 
-  const current = currentBlock(blocks, nowMin);
-  const curId = current ? current.id : null;
+  const ap = activePrayer(blocks, nowMin, done);
+  updatePauses(key, blocks, nowMin, done);
+  const current = blocks.find(b => !b.prayer && toMin(b.start) <= nowMin && nowMin < toMin(b.end)) || null;
+
+  const curId = ap ? ap.id : (current ? current.id : null);
   if(lastBlockId !== "__init__" && curId !== lastBlockId){ beep(); }
   lastBlockId = curId;
 
   const next = blocks.find(b => toMin(b.start) > nowMin);
   const card = document.getElementById("nowCard");
 
-  if(current){
-    const total = (toMin(current.end)-toMin(current.start))*60;
-    const passed = (nowMin - toMin(current.start))*60;
-    const left = Math.max(0, total - passed);
+  if(ap){
+    const pausedNote = (current && (current.cat==="Study"||current.cat==="Work"))
+      ? `<div class="now-next">⏸ Your <b>${esc(current.name)}</b> timer is paused — it resumes when you tap.</div>` : "";
+    card.innerHTML = `
+      <div class="now-card dayover">
+        <div class="now-label">Prayer time</div>
+        <div class="now-title">🕌 ${esc(ap.name)}</div>
+        <div class="now-sub">It's time — ${fmt12(ap.start)}</div>
+        ${pausedNote}
+        <button class="focus-btn" onclick="prayedNow()">🕌 I finished praying ✓</button>
+      </div>`;
+  } else if(current){
+    const totalSec  = (toMin(current.end)-toMin(current.start))*60;
+    const passedSec = (nowMin - toMin(current.start))*60;
+    const P = getPauses(key);
+    const effPassed = Math.max(0, passedSec - pausedFor(P, current.id));
+    const left = Math.max(0, totalSec - passedSec);
     const mm = Math.floor(left/60), ss = Math.floor(left%60);
     card.innerHTML = `
       <div class="now-card">
@@ -908,8 +986,8 @@ function renderToday(){
         <div class="now-title">${emojiFor(current)} ${esc(current.name)}</div>
         <div class="now-sub">${fmt12(current.start)} – ${fmt12(current.end)}</div>
         <div class="now-timer">${mm}:${pad(ss)}<small>LEFT</small></div>
-        <div class="bar"><i style="width:${Math.min(100,(passed/total)*100)}%"></i></div>
-        ${ next ? `<div class="now-next">Next: <b>${esc(next.name)}</b> at ${fmt12(next.start)}</div>` : "" }
+        <div class="bar"><i style="width:${Math.min(100,(effPassed/totalSec)*100)}%"></i></div>
+        ${ next ? `<div class="now-next">Next: <b>${next.prayer?"🕌 ":""}${esc(next.name)}</b> at ${fmt12(next.start)}</div>` : "" }
         <button class="focus-btn" onclick="enterFocus()">▶ Enter Focus Mode</button>
       </div>`;
   } else if(next){
@@ -919,7 +997,7 @@ function renderToday(){
         <div class="now-label">Free time</div>
         <div class="now-title">No excuse to scroll 📵</div>
         <div class="now-sub">Use this time or rest with intention.</div>
-        <div class="now-next">Next: <b>${esc(next.name)}</b> at ${fmt12(next.start)} (in ${wait} min)</div>
+        <div class="now-next">Next: <b>${next.prayer?"🕌 ":""}${esc(next.name)}</b> at ${fmt12(next.start)} (in ${wait} min)</div>
       </div>`;
   } else if(blocks.length){
     card.innerHTML = `
@@ -943,11 +1021,11 @@ function renderToday(){
   } else {
     list.innerHTML = blocks.map(b=>{
       const past = toMin(b.end) <= nowMin;
-      const cur = current && current.id===b.id;
+      const cur = (ap && ap.id===b.id) || (!ap && current && current.id===b.id);
       const isDone = !!done[b.id];
       return `
       <div class="block ${past&&!cur?"past":""} ${cur?"current":""}">
-        <div class="block-time">${fmt12(b.start)}<br>${fmt12(b.end)}</div>
+        <div class="block-time">${b.prayer ? "🕌 "+fmt12(b.start) : fmt12(b.start)+"<br>"+fmt12(b.end)}</div>
         <div class="block-info">
           <div class="block-name">${emojiFor(b)} ${esc(b.name)}${b.repeat?" ↻":""}</div>
           <div class="block-cat cat-${b.cat}">${catLabel(b)}</div>
@@ -995,8 +1073,7 @@ function enterFocus(){
 }
 function exitFocus(){
   breakUntil = 0; lastPhase = null;
-  document.getElementById("focus").classList.remove("show");
-  document.getElementById("focus").classList.remove("rest");
+  document.getElementById("focus").className = "";
   try{ if(wakeLock){ wakeLock.release(); wakeLock=null; } }catch(e){}
 }
 let breakUntil = 0;
@@ -1008,26 +1085,54 @@ function toggleBreak(){
 function updateFocus(){
   const el = document.getElementById("focus");
   if(!el.classList.contains("show")) return;
-  const now = new Date();
-  const nowMin = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
-  const cur = currentBlock(blocksFor(now), nowMin);
   const $ = id => document.getElementById(id);
+  const now = new Date(), key = dateKey(now);
+  const nowMin = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
+  const blocks = blocksFor(now);
+  const done = doneMap(key);
+  const ap = activePrayer(blocks, nowMin, done);
+  const P = updatePauses(key, blocks, nowMin, done);
+  const cur = blocks.find(b => !b.prayer && toMin(b.start) <= nowMin && nowMin < toMin(b.end)) || null;
+
+  el.className = ""; el.classList.add("show"); /* reset theme classes */
+
+  /* ---- prayer interruption screen ---- */
+  if(ap){
+    el.classList.add("th-Prayer");
+    $("fcLabel").textContent = "Prayer time";
+    $("fcEmoji").textContent = "🕌";
+    $("fcName").textContent = "Time for "+ap.name;
+    $("fcTimer").textContent = fmt12(ap.start);
+    $("fcRange").textContent = cur ? "Your "+cur.name+" timer is paused ⏸" : "Everything can wait.";
+    $("fcQuote").textContent = rotQuote("Prayer");
+    $("fcBar").style.width = "100%";
+    $("fcPrayed").style.display = "block";
+    $("fcBreak").style.display = "none";
+    if(lastPhase !== "prayer") beep();
+    lastPhase = "prayer";
+    return;
+  }
+  $("fcPrayed").style.display = "none";
+
   if(!cur){
     breakUntil = 0; lastPhase = null;
-    el.classList.remove("rest");
+    el.classList.add("th-Fixed");
     $("fcLabel").textContent = "Focus mode";
+    $("fcEmoji").textContent = "🏁";
     $("fcName").textContent = "Task finished!";
     $("fcTimer").textContent = "0:00";
     $("fcRange").textContent = "Well done. Exit and check what's next.";
-    $("fcBar").style.width = "100%";
     $("fcQuote").textContent = "Take a breath. You earned it.";
+    $("fcBar").style.width = "100%";
     $("fcBreak").style.display = "none";
     return;
   }
+
   const totalSec  = (toMin(cur.end)-toMin(cur.start))*60;
   const passedSec = (nowMin - toMin(cur.start))*60;
-  const blockLeft = Math.max(0, totalSec - passedSec);
-  const CYC = 3600, FOC = 3000; /* 50 min focus + 10 min rest */
+  const effPassed = Math.max(0, passedSec - pausedFor(P, cur.id));
+  const blockLeft = Math.max(0, totalSec - passedSec); /* wall clock: planned end is the law */
+  const CYC = 3600, FOC = 3000;
 
   let phase = "task", remain = blockLeft;
   if(breakUntil > Date.now()){
@@ -1036,7 +1141,7 @@ function updateFocus(){
   } else {
     breakUntil = 0;
     if(cur.cat==="Study" || cur.cat==="Work"){
-      const pos = passedSec % CYC;
+      const pos = effPassed % CYC;
       if(pos < FOC){ phase = "focus"; remain = Math.min(blockLeft, FOC - pos); }
       else         { phase = "rest";  remain = Math.min(blockLeft, CYC - pos); }
     }
@@ -1044,21 +1149,24 @@ function updateFocus(){
   if(lastPhase && lastPhase !== phase) beep();
   lastPhase = phase;
 
+  const th = themeFor(cur.cat);
   const resty = (phase==="rest" || phase==="break");
+  el.classList.add("th-"+(FOCUS_THEMES[cur.cat] ? cur.cat : "Other"));
   el.classList.toggle("rest", resty);
-  const cycleNum = Math.floor(passedSec / CYC) + 1;
+  const cycleNum = Math.floor(effPassed / CYC) + 1;
   $("fcLabel").textContent =
     phase==="focus" ? "Focus · cycle "+cycleNum :
     phase==="rest"  ? "Cycle rest · recharge" :
-    phase==="break" ? "Break · back soon" : "Focus mode";
-  $("fcName").textContent = emojiFor(cur)+" "+cur.name;
+    phase==="break" ? "Break · back soon" : cur.cat+" mode";
+  $("fcEmoji").textContent = resty ? "😌" : th.emoji;
+  $("fcName").textContent = cur.name;
   const mm = Math.floor(remain/60), ss = Math.floor(remain%60);
   $("fcTimer").textContent = mm+":"+pad(ss);
   $("fcRange").textContent = fmt12(cur.start)+" – "+fmt12(cur.end)+((phase==="focus"||phase==="rest")?" · 50/10 cycles":"");
-  $("fcBar").style.width = Math.min(100,(passedSec/totalSec)*100)+"%";
+  $("fcBar").style.width = Math.min(100,(effPassed/totalSec)*100)+"%";
   $("fcQuote").textContent = resty
     ? "Rest for real: stand up, stretch, drink water. No scrolling."
-    : "Your phone is now a timer, nothing else. Put it down and do the work.";
+    : rotQuote(cur.cat);
   $("fcBreak").style.display = "block";
   $("fcBreak").textContent = (phase==="break") ? "▶ End break early" : "☕ Take a 10-min break";
 }
@@ -1108,7 +1216,7 @@ function renderPlan(){
     const kind = b.repeat ? "routine" : "task";
     return `
     <div class="block">
-      <div class="block-time">${fmt12(b.start)}<br>${fmt12(b.end)}</div>
+      <div class="block-time">${b.prayer ? "🕌 "+fmt12(b.start) : fmt12(b.start)+"<br>"+fmt12(b.end)}</div>
       <div class="block-info">
         <div class="block-name">${emojiFor(b)} ${esc(b.name)}${b.repeat?" ↻":""}</div>
         <div class="block-cat cat-${b.cat}">${fixed?"Fixed · every week":(b.repeat?b.cat+" · weekly":b.cat)}</div>
@@ -1162,6 +1270,7 @@ function submitTask(e){
   const days = chipDays();
   const err  = document.getElementById("fErr");
   err.style.display="none";
+  err.style.color = "var(--danger)";
 
   if(!name || !start || !end) return false;
   if(toMin(end) <= toMin(start)){
@@ -1196,9 +1305,20 @@ function submitTask(e){
     store.set("tasks:"+key, tasks);
   }
 
+  /* prayer overlap heads-up (non-blocking) */
+  const pt = prayerTimes(planDate());
+  const overlaps = ["Fajr","Dhuhr","Asr","Maghrib","Isha"]
+    .filter(n => toMin(start) < pt[n] + 25 && pt[n] < toMin(end));
+
   cancelEdit();
   renderPlan();
   renderToday();
+  if(overlaps.length){
+    err.textContent = "Added ✓ Heads-up: this crosses 🕌 " + overlaps.join(", ") +
+      " — the app will pause your timer at prayer time and resume when you tap.";
+    err.style.display = "block";
+    err.style.color = "#B05E00";
+  }
   return false;
 }
 
