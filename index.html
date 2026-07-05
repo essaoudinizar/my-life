@@ -122,7 +122,7 @@
   .block-name{font-weight:700;font-size:15px}
   .block-cat{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-top:2px}
   .cat-Study{color:var(--now)} .cat-Sport{color:var(--ok)} .cat-Rest{color:var(--rest)}
-  .cat-Work{color:#0E7C8C}
+  .cat-Work{color:#0E7C8C} .cat-Prayer{color:#1E8E5A}
   .cat-Fixed{color:var(--ink-soft)} .cat-Other{color:#8A5CC7}
   .check{
     width:30px;height:30px;border-radius:50%;
@@ -241,6 +241,9 @@
     text-align:center;padding:30px 24px;
   }
   #focus.show{display:flex}
+  #focus.rest{background:linear-gradient(160deg,#0B241A 0%,#1F9D66 170%)}
+  #fcBreak{margin-top:34px}
+  #fcBreak + .f-exit{margin-top:12px}
   #focus .f-label{font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;opacity:.7}
   #focus .f-name{font-family:"Archivo",sans-serif;font-weight:800;font-size:30px;margin:10px 0 30px;letter-spacing:-.5px}
   #focus .f-timer{
@@ -258,6 +261,80 @@
     background:rgba(255,255,255,.08);color:#fff;
     font-family:"Archivo",sans-serif;font-weight:700;font-size:14px;cursor:pointer;
   }
+
+  /* ---------- AUTH ---------- */
+  #auth{
+    position:fixed;inset:0;z-index:60;background:var(--paper);
+    display:none;align-items:center;justify-content:center;padding:20px;
+    overflow:auto;
+  }
+  .auth-card{
+    width:100%;max-width:380px;background:var(--card);
+    border:1px solid var(--line);border-radius:20px;padding:26px 22px;
+    box-shadow:0 16px 40px rgba(22,35,58,.12);
+  }
+  .auth-logo{font-family:"Archivo",sans-serif;font-weight:800;font-size:30px;letter-spacing:-1px;text-align:center}
+  .auth-logo span{color:var(--now)}
+  .auth-sub{text-align:center;font-size:13px;color:var(--ink-soft);margin:4px 0 18px}
+  .auth-tabs{display:flex;gap:8px;margin-bottom:16px}
+  .auth-tabs button{
+    flex:1;padding:10px;border-radius:12px;border:1px solid var(--line);
+    background:var(--paper);font-weight:700;font-size:13px;color:var(--ink-soft);cursor:pointer;font-family:inherit;
+  }
+  .auth-tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .auth-card label{display:block;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-soft);margin:12px 0 4px}
+  .auth-card input{
+    width:100%;padding:12px;font-size:15px;border:1px solid var(--line);
+    border-radius:10px;background:var(--paper);color:var(--ink);font-family:inherit;
+  }
+  .auth-main{
+    width:100%;margin-top:18px;padding:13px;border:none;border-radius:12px;
+    background:var(--now);color:#fff;font-weight:800;font-size:15px;
+    font-family:"Archivo",sans-serif;cursor:pointer;
+  }
+  .auth-google{
+    width:100%;margin-top:10px;padding:12px;border-radius:12px;
+    border:1px solid var(--line);background:#fff;color:var(--ink);
+    font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;
+  }
+  .auth-links{text-align:center;margin-top:14px;font-size:13px;color:var(--ink-soft)}
+  .auth-links a{color:var(--now);font-weight:600;cursor:pointer;text-decoration:none}
+  /* ---------- PROFILE ---------- */
+  .profile-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px;margin-bottom:14px;text-align:center;
+  }
+  .avatar{
+    width:92px;height:92px;border-radius:50%;margin:0 auto 10px;
+    background:var(--now);color:#fff;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    font-family:"Archivo",sans-serif;font-weight:800;font-size:38px;
+  }
+  .avatar img{width:100%;height:100%;object-fit:cover}
+  .pf-photo{
+    background:none;border:none;color:var(--now);font-weight:700;
+    font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:8px;
+  }
+  .pf-row{display:flex;gap:8px;margin-top:6px}
+  .pf-row input{
+    flex:1;padding:11px;font-size:15px;border:1px solid var(--line);
+    border-radius:10px;background:var(--paper);color:var(--ink);font-family:inherit;
+  }
+  .pf-row button{
+    padding:11px 16px;border:none;border-radius:10px;background:var(--now);
+    color:#fff;font-weight:800;cursor:pointer;font-family:"Archivo",sans-serif;
+  }
+  .pf-email{font-size:14px;color:var(--ink-soft);margin-top:12px}
+  .pf-badge{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;padding:5px 12px;border-radius:99px}
+  .pf-badge.ok{background:#E2F5EC;color:var(--ok)}
+  .pf-badge.warn{background:#FDEEE0;color:#B05E00}
+  .pf-actions{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+  .pf-actions button{
+    padding:12px;border-radius:12px;border:1px solid var(--line);
+    background:var(--paper);color:var(--ink);font-weight:700;font-size:14px;
+    cursor:pointer;font-family:inherit;
+  }
+  .pf-actions button.danger{color:var(--danger)}
 </style>
 </head>
 <body>
@@ -341,38 +418,330 @@
     <p class="note">Score = minutes of tasks marked done ÷ total planned minutes. A day counts for your streak when it reaches 70% or more. Beat yesterday. 🔥</p>
   </div>
 
+  <!-- ===== PROFILE ===== -->
+  <div class="view" id="view-profile">
+    <div class="section-label">My account</div>
+    <div class="profile-card">
+      <div class="avatar" id="pfAvatar">?</div>
+      <input type="file" id="pfFile" accept="image/*" style="display:none" onchange="pickPhoto(event)">
+      <button class="pf-photo" onclick="document.getElementById('pfFile').click()">Change photo</button>
+      <div class="pf-row">
+        <input id="pfName" type="text" maxlength="30" placeholder="Your name">
+        <button onclick="savePfName()">Save</button>
+      </div>
+      <div class="pf-email" id="pfEmail"></div>
+      <div id="pfVerify"></div>
+      <div id="pfSync" style="margin-top:6px"></div>
+      <div class="pf-email" id="pfStats" style="font-weight:700;color:var(--ink)"></div>
+      <div class="pf-actions">
+        <button id="pfResend" onclick="resendVerify()" style="display:none">Resend verification email</button>
+        <button id="pfSignout" class="danger">Sign out</button>
+      </div>
+    </div>
+    <p class="note">Your plans, scores and streak are saved to your account and sync automatically on every device where you sign in.</p>
+  </div>
 </main>
 
 <nav>
   <button class="on" id="tab-today" onclick="showView('today')"><span class="ico">⏱</span>Today</button>
   <button id="tab-plan" onclick="showView('plan')"><span class="ico">✎</span>Plan</button>
   <button id="tab-stats" onclick="showView('stats')"><span class="ico">▮▯</span>Stats</button>
+  <button id="tab-profile" onclick="showView('profile')"><span class="ico">👤</span>Me</button>
 </nav>
 
 <!-- ===== FOCUS MODE ===== -->
 <div id="focus">
-  <div class="f-label">Focus mode</div>
+  <div class="f-label" id="fcLabel">Focus mode</div>
   <div class="f-name" id="fcName"></div>
   <div class="f-timer" id="fcTimer">00:00</div>
   <div class="f-range" id="fcRange"></div>
   <div class="bar"><i id="fcBar"></i></div>
-  <div class="f-quote">Your phone is now a timer, nothing else. Put it down and do the work.</div>
+  <div class="f-quote" id="fcQuote">Your phone is now a timer, nothing else. Put it down and do the work.</div>
+  <button class="f-exit" id="fcBreak" onclick="toggleBreak()">☕ Take a 10-min break</button>
   <button class="f-exit" onclick="exitFocus()">Exit focus</button>
 </div>
 
+<!-- ===== AUTH SCREEN ===== -->
+<div id="auth">
+  <div class="auth-card">
+    <div class="auth-logo">My <span>Life</span></div>
+    <p class="auth-sub">Sign in and your plans follow you on every device.</p>
+    <div class="auth-tabs">
+      <button id="atLogin" class="on" onclick="setAuthMode('login')">Sign in</button>
+      <button id="atSignup" onclick="setAuthMode('signup')">Create account</button>
+    </div>
+    <div id="fldName" style="display:none">
+      <label>Your name</label>
+      <input id="aName" type="text" maxlength="30" placeholder="e.g. Nizar">
+    </div>
+    <label>Email</label>
+    <input id="aEmail" type="email" placeholder="you@gmail.com" autocomplete="email">
+    <label>Password</label>
+    <input id="aPass" type="password" placeholder="6+ characters" autocomplete="current-password">
+    <div class="form-err" id="authErr" style="margin-top:10px"></div>
+    <button class="auth-main" id="authGo" onclick="authGo()">Sign in</button>
+    <button class="auth-google" onclick="doGoogle()">Continue with Google</button>
+    <div class="auth-links">
+      <a onclick="doReset()">Forgot password?</a> &nbsp;·&nbsp; <a onclick="skipAuth()">Use offline on this device</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script>
-/* ---------- safe storage ---------- */
-const mem = {};
-const store = {
-  get(k){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : (mem[k] ?? null); }catch(e){ return mem[k] ?? null; } },
-  set(k,v){ mem[k]=v; try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+/* ---------- Firebase setup (guarded: app still works offline if the library doesn't load) ---------- */
+const HAS_FB = (typeof firebase !== "undefined");
+const firebaseConfig = {
+  apiKey: "AIzaSyAE30Ztp5HzHTs9GSnurqM-iYlq58j_qrE",
+  authDomain: "my-life-1e52a.firebaseapp.com",
+  projectId: "my-life-1e52a",
+  storageBucket: "my-life-1e52a.firebasestorage.app",
+  messagingSenderId: "594127106432",
+  appId: "1:594127106432:web:3fc7ab50d6271ac2471165",
+  measurementId: "G-VX83X9FYX3"
 };
+let fauth = null, fdb = null;
+if(HAS_FB){
+  try{
+    firebase.initializeApp(firebaseConfig);
+    fauth = firebase.auth();
+    fdb = firebase.firestore();
+    try{ fdb.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
+  }catch(e){ fauth = null; fdb = null; }
+}
+
+/* ---------- cloud-backed storage ---------- */
+let DB = {};
+let saveTimer = null, unsubDoc = null, syncStatus = "off";
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+(function loadLocal(){
+  const raw = lsGet("mylife-db");
+  if(raw){ try{ DB = JSON.parse(raw) || {}; }catch(e){} }
+  else {
+    /* migrate data saved by older versions of the app */
+    try{
+      for(let i=0;i<localStorage.length;i++){
+        const k = localStorage.key(i);
+        if(/^(tasks:|done:)/.test(k) || k==="scores" || k==="routines" || k==="alertsOn"){
+          try{ DB[k] = JSON.parse(localStorage.getItem(k)); }catch(e){}
+        }
+      }
+      lsSet("mylife-db", JSON.stringify(DB));
+    }catch(e){}
+  }
+})();
+const store = {
+  get(k){ return (k in DB) ? DB[k] : null; },
+  set(k,v){ DB[k] = v; persist(); }
+};
+function persist(){
+  lsSet("mylife-db", JSON.stringify(DB));
+  const u = fauth && fauth.currentUser;
+  if(u && fdb){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=>{
+      fdb.collection("users").doc(u.uid).set(DB)
+        .then(()=>{ syncStatus="ok"; })
+        .catch(()=>{ syncStatus="err"; });
+    }, 700);
+  }
+}
+function renderAll(){
+  alertsOn = !!store.get("alertsOn"); updateBell();
+  renderToday();
+  if(document.getElementById("view-plan").classList.contains("active")) renderPlan();
+  if(document.getElementById("view-stats").classList.contains("active")) renderStats();
+  if(document.getElementById("view-profile").classList.contains("active")) renderProfile();
+}
+
+/* ---------- auth UI ---------- */
+let authMode = "login";
+function showAuth(){ document.getElementById("auth").style.display = "flex"; }
+function hideAuth(){ document.getElementById("auth").style.display = "none"; }
+function authMsg(t, ok){
+  const e = document.getElementById("authErr");
+  e.textContent = t || "";
+  e.style.display = t ? "block" : "none";
+  e.style.color = ok ? "var(--ok)" : "var(--danger)";
+}
+function setAuthMode(m){
+  authMode = m;
+  document.getElementById("atLogin").classList.toggle("on", m==="login");
+  document.getElementById("atSignup").classList.toggle("on", m==="signup");
+  document.getElementById("fldName").style.display = m==="signup" ? "block" : "none";
+  document.getElementById("authGo").textContent = m==="signup" ? "Create my account" : "Sign in";
+  authMsg("");
+}
+function niceAuthError(e){
+  const c = (e && e.code) || "";
+  if(c.includes("invalid-email")) return "That email address doesn't look right.";
+  if(c.includes("email-already-in-use")) return "This email already has an account — try Sign in.";
+  if(c.includes("weak-password")) return "Password too short: use at least 6 characters.";
+  if(c.includes("invalid-credential")||c.includes("wrong-password")||c.includes("user-not-found")) return "Wrong email or password.";
+  if(c.includes("too-many-requests")) return "Too many tries. Wait a minute and try again.";
+  if(c.includes("network")) return "No internet connection. Try again.";
+  if(c.includes("unauthorized-domain")) return "This domain isn't authorized yet (see Firebase → Authentication → Settings → Authorized domains).";
+  return "Something went wrong. Try again.";
+}
+function fbMissing(){
+  if(fauth) return false;
+  authMsg("Can't reach the sign-in service here. Open the app from its real link with internet, or tap 'Use offline'.");
+  return true;
+}
+async function authGo(){
+  if(fbMissing()) return;
+  const email = document.getElementById("aEmail").value.trim();
+  const pass  = document.getElementById("aPass").value;
+  const name  = document.getElementById("aName").value.trim();
+  authMsg("");
+  if(!email || !pass){ authMsg("Enter your email and password."); return; }
+  try{
+    if(authMode === "signup"){
+      if(!name){ authMsg("Tell me your name 🙂"); return; }
+      const cred = await fauth.createUserWithEmailAndPassword(email, pass);
+      await cred.user.updateProfile({ displayName: name });
+      store.set("profile", Object.assign({}, store.get("profile")||{}, { name }));
+      try{ await cred.user.sendEmailVerification(); }catch(e){}
+      authMsg("Account created! Check your inbox for the verification email ✉", true);
+    } else {
+      await fauth.signInWithEmailAndPassword(email, pass);
+    }
+  }catch(e){ authMsg(niceAuthError(e)); }
+}
+async function doGoogle(){
+  if(fbMissing()) return;
+  const p = new firebase.auth.GoogleAuthProvider();
+  try{ await fauth.signInWithPopup(p); }
+  catch(e){
+    if((e.code||"").includes("popup")){ try{ await fauth.signInWithRedirect(p); }catch(e2){ authMsg(niceAuthError(e2)); } }
+    else authMsg(niceAuthError(e));
+  }
+}
+async function doReset(){
+  if(fbMissing()) return;
+  const email = document.getElementById("aEmail").value.trim();
+  if(!email){ authMsg("Type your email above first, then tap Forgot password."); return; }
+  try{ await fauth.sendPasswordResetEmail(email); authMsg("Reset link sent — check your inbox ✉", true); }
+  catch(e){ authMsg(niceAuthError(e)); }
+}
+function skipAuth(){ lsSet("mylife-skip","1"); hideAuth(); }
+function doSignOut(){
+  if(!fauth){ location.reload(); return; }
+  fauth.signOut().then(()=>{ lsSet("mylife-skip",""); location.reload(); });
+}
+
+/* ---------- live sync ---------- */
+if(!fauth){
+  /* offline / library blocked: keep the app fully usable on this device */
+  hideAuth();
+}
+if(fauth) fauth.onAuthStateChanged(u=>{
+  if(unsubDoc){ unsubDoc(); unsubDoc = null; }
+  if(u){
+    hideAuth();
+    syncStatus = "on";
+    unsubDoc = fdb.collection("users").doc(u.uid).onSnapshot(doc=>{
+      if(doc.exists){
+        DB = Object.assign({}, DB, doc.data() || {});
+        lsSet("mylife-db", JSON.stringify(DB));
+        syncStatus = "ok";
+      } else {
+        fdb.collection("users").doc(u.uid).set(DB).then(()=>{ syncStatus="ok"; }).catch(()=>{ syncStatus="err"; });
+      }
+      renderAll();
+    }, err=>{ syncStatus = "err"; renderAll(); });
+  } else {
+    if(lsGet("mylife-skip") === "1") hideAuth(); else showAuth();
+  }
+  renderAll();
+});
+
+/* ---------- profile ---------- */
+function renderProfile(){
+  const u = fauth && fauth.currentUser;
+  const prof = store.get("profile") || {};
+  const av = document.getElementById("pfAvatar");
+  const photo = prof.photo || (u && u.photoURL) || null;
+  const nm = prof.name || (u && u.displayName) || "";
+  av.innerHTML = photo ? '<img src="'+photo+'" alt="">' : esc((nm||"?").charAt(0).toUpperCase());
+  document.getElementById("pfName").value = nm;
+  const emailEl = document.getElementById("pfEmail");
+  const badgeEl = document.getElementById("pfVerify");
+  const syncEl  = document.getElementById("pfSync");
+  const outBtn  = document.getElementById("pfSignout");
+  const verBtn  = document.getElementById("pfResend");
+  if(u){
+    emailEl.textContent = u.email || "";
+    const isGoogle = (u.providerData||[]).some(p=>p.providerId==="google.com");
+    const verified = u.emailVerified || isGoogle;
+    badgeEl.innerHTML = verified
+      ? '<span class="pf-badge ok">✓ Email verified</span>'
+      : '<span class="pf-badge warn">✉ Email not verified yet</span>';
+    verBtn.style.display = verified ? "none" : "block";
+    syncEl.innerHTML = syncStatus==="err"
+      ? '<span class="pf-badge warn">⚠ Cloud sync error — check Firestore rules</span>'
+      : '<span class="pf-badge ok">☁ Synced to your account</span>';
+    outBtn.textContent = "Sign out";
+    outBtn.onclick = doSignOut;
+  } else {
+    emailEl.textContent = fauth ? "Offline mode — data saved on this device only"
+                                : "Offline — sign-in unavailable here (open the app's real link)";
+    badgeEl.innerHTML = "";
+    verBtn.style.display = "none";
+    syncEl.innerHTML = "";
+    outBtn.textContent = "Sign in / Create account";
+    outBtn.onclick = ()=>{ lsSet("mylife-skip",""); showAuth(); };
+  }
+  const s = streakCount();
+  const scores = store.get("scores") || {};
+  document.getElementById("pfStats").textContent =
+    "🔥 Streak: "+s+" · Days tracked: "+Object.keys(scores).length;
+}
+function savePfName(){
+  const n = document.getElementById("pfName").value.trim();
+  if(!n) return;
+  store.set("profile", Object.assign({}, store.get("profile")||{}, { name:n }));
+  const u = fauth.currentUser;
+  if(u) u.updateProfile({ displayName:n }).catch(()=>{});
+  renderProfile();
+}
+function pickPhoto(ev){
+  const f = ev.target.files && ev.target.files[0];
+  if(!f) return;
+  const img = new Image();
+  const rd = new FileReader();
+  rd.onload = ()=>{ img.src = rd.result; };
+  img.onload = ()=>{
+    const c = document.createElement("canvas");
+    const size = 200;
+    c.width = size; c.height = size;
+    const x = c.getContext("2d");
+    const m = Math.min(img.width, img.height);
+    x.drawImage(img, (img.width-m)/2, (img.height-m)/2, m, m, 0, 0, size, size);
+    const data = c.toDataURL("image/jpeg", 0.82);
+    store.set("profile", Object.assign({}, store.get("profile")||{}, { photo:data }));
+    renderProfile();
+  };
+  rd.readAsDataURL(f);
+}
+async function resendVerify(){
+  const u = fauth && fauth.currentUser;
+  if(!u) return;
+  try{ await u.sendEmailVerification(); alert("Verification email sent — check your inbox."); }
+  catch(e){ alert("Couldn't send right now, try again in a minute."); }
+}
+</script>
+<script>
+/* ---------- (storage now lives in the cloud module above) ---------- */
 
 /* ---------- fixed weekly events (0=Sun ... 6=Sat) ---------- */
 const FIXED = [
-  { id:"f-class",     name:"Class",       start:"10:00", end:"11:20", days:[1,2,3,4,5], cat:"Fixed", emoji:"🎓" },
-  { id:"f-breakfast", name:"Breakfast",   start:"11:30", end:"12:30", days:[1,2,3,4,5], cat:"Fixed", emoji:"🍳" },
-  { id:"f-lab",       name:"Lab session", start:"17:00", end:"19:00", days:[1,3],       cat:"Fixed", emoji:"🔬" }
+  { id:"f-class",     name:"Class",       start:"10:00", end:"11:20", days:[1,2,3,4,5], cat:"Fixed", locked:true, emoji:"🎓" },
+  { id:"f-breakfast", name:"Breakfast",   start:"11:30", end:"12:30", days:[1,2,3,4,5], cat:"Fixed", locked:true, emoji:"🍳" },
+  { id:"f-lab",       name:"Lab session", start:"17:00", end:"19:00", days:[1,3],       cat:"Fixed", locked:true, emoji:"🔬" }
 ];
 
 /* ---------- helpers ---------- */
@@ -383,16 +752,53 @@ function fmt12(t){ let [h,m]=t.split(":").map(Number); const ap=h>=12?"PM":"AM";
 function dayName(d){ return d.toLocaleDateString("en-US",{weekday:"long", month:"short", day:"numeric"}); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
-const CAT_EMOJI = { Study:"📚", Work:"💼", Sport:"🏋️", Rest:"😌", Other:"✨", Fixed:"🎓" };
+const CAT_EMOJI = { Study:"📚", Work:"💼", Sport:"🏋️", Rest:"😌", Other:"✨", Prayer:"🕌", Fixed:"🎓" };
 function emojiFor(b){ return b.emoji || CAT_EMOJI[b.cat] || "•"; }
 function routines(){ return store.get("routines") || []; }
+
+/* ---------- prayer times (calculated for Fes, Morocco — edit P_LAT/P_LON for another city) ---------- */
+const P_LAT = 34.0331, P_LON = -5.0003;
+const D2R = Math.PI/180, R2D = 180/Math.PI;
+function prayerTimes(d){
+  const tz = -d.getTimezoneOffset()/60;
+  const N = Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()) - Date.UTC(d.getFullYear(),0,0))/86400000);
+  const g = 2*Math.PI/365*(N-1);
+  const eqt = 229.18*(0.000075 + 0.001868*Math.cos(g) - 0.032077*Math.sin(g) - 0.014615*Math.cos(2*g) - 0.040849*Math.sin(2*g));
+  const decl = 23.45*Math.sin(D2R*(360/365)*(284+N));
+  const dhuhr = 12 + tz - P_LON/15 - eqt/60;
+  const ha = a => R2D*Math.acos((-Math.sin(D2R*a) - Math.sin(D2R*P_LAT)*Math.sin(D2R*decl))/(Math.cos(D2R*P_LAT)*Math.cos(D2R*decl)))/15;
+  const asrAlt = R2D*Math.atan(1/(1+Math.tan(D2R*Math.abs(P_LAT-decl))));
+  const haAsr = R2D*Math.acos((Math.sin(D2R*asrAlt) - Math.sin(D2R*P_LAT)*Math.sin(D2R*decl))/(Math.cos(D2R*P_LAT)*Math.cos(D2R*decl)))/15;
+  const m = h => Math.round(h*60);
+  return {
+    Fajr:    m(dhuhr - ha(19)),
+    Dhuhr:   m(dhuhr) + 5,
+    Asr:     m(dhuhr + haAsr),
+    Maghrib: m(dhuhr + ha(0.833)) + 3,
+    Isha:    m(dhuhr + ha(17))
+  };
+}
+function minToHM(m){ m=((m%1440)+1440)%1440; return pad(Math.floor(m/60))+":"+pad(m%60); }
+function prayerBlocks(d){
+  const t = prayerTimes(d);
+  return ["Fajr","Dhuhr","Asr","Maghrib","Isha"].map(n=>({
+    id:"p-"+n, name:n, start:minToHM(t[n]), end:minToHM(t[n]+25),
+    cat:"Prayer", emoji:"🕌", locked:true
+  }));
+}
+function catLabel(b){
+  if(b.cat==="Fixed") return "Fixed · every week";
+  if(b.cat==="Prayer") return "Prayer · auto times";
+  return b.repeat ? b.cat+" · weekly" : b.cat;
+}
 
 function blocksFor(d){
   const key = dateKey(d), wd = d.getDay();
   const fixed = FIXED.filter(f=>f.days.includes(wd)).map(f=>({...f}));
   const reps  = routines().filter(r=>r.days.includes(wd)).map(r=>({...r, repeat:true}));
   const tasks = store.get("tasks:"+key) || [];
-  return [...fixed, ...reps, ...tasks].sort((a,b)=>toMin(a.start)-toMin(b.start));
+  const prayers = prayerBlocks(d);
+  return [...fixed, ...prayers, ...reps, ...tasks].sort((a,b)=>toMin(a.start)-toMin(b.start));
 }
 function doneMap(key){ return store.get("done:"+key) || {}; }
 
@@ -444,6 +850,7 @@ function showView(name){
   document.getElementById("tab-"+name).classList.add("on");
   if(name==="plan") renderPlan();
   if(name==="stats") renderStats();
+  if(name==="profile") renderProfile();
 }
 
 /* ---------- current block + alert on change ---------- */
@@ -543,7 +950,7 @@ function renderToday(){
         <div class="block-time">${fmt12(b.start)}<br>${fmt12(b.end)}</div>
         <div class="block-info">
           <div class="block-name">${emojiFor(b)} ${esc(b.name)}${b.repeat?" ↻":""}</div>
-          <div class="block-cat cat-${b.cat}">${b.cat==="Fixed"?"Fixed · every week":(b.repeat?b.cat+" · weekly":b.cat)}</div>
+          <div class="block-cat cat-${b.cat}">${catLabel(b)}</div>
         </div>
         <button class="check ${isDone?"done":""}" onclick="toggleDone('${key}','${b.id}')" aria-label="Mark done">${isDone?"✓":""}</button>
       </div>`;
@@ -587,8 +994,16 @@ function enterFocus(){
   }catch(e){}
 }
 function exitFocus(){
+  breakUntil = 0; lastPhase = null;
   document.getElementById("focus").classList.remove("show");
+  document.getElementById("focus").classList.remove("rest");
   try{ if(wakeLock){ wakeLock.release(); wakeLock=null; } }catch(e){}
+}
+let breakUntil = 0;
+let lastPhase = null;
+function toggleBreak(){
+  breakUntil = (breakUntil > Date.now()) ? 0 : Date.now() + 10*60*1000;
+  updateFocus();
 }
 function updateFocus(){
   const el = document.getElementById("focus");
@@ -596,21 +1011,56 @@ function updateFocus(){
   const now = new Date();
   const nowMin = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
   const cur = currentBlock(blocksFor(now), nowMin);
+  const $ = id => document.getElementById(id);
   if(!cur){
-    document.getElementById("fcName").textContent = "Task finished!";
-    document.getElementById("fcTimer").textContent = "0:00";
-    document.getElementById("fcRange").textContent = "Well done. Exit and check what's next.";
-    document.getElementById("fcBar").style.width = "100%";
+    breakUntil = 0; lastPhase = null;
+    el.classList.remove("rest");
+    $("fcLabel").textContent = "Focus mode";
+    $("fcName").textContent = "Task finished!";
+    $("fcTimer").textContent = "0:00";
+    $("fcRange").textContent = "Well done. Exit and check what's next.";
+    $("fcBar").style.width = "100%";
+    $("fcQuote").textContent = "Take a breath. You earned it.";
+    $("fcBreak").style.display = "none";
     return;
   }
-  const total = (toMin(cur.end)-toMin(cur.start))*60;
-  const passed = (nowMin - toMin(cur.start))*60;
-  const left = Math.max(0, total-passed);
-  const mm = Math.floor(left/60), ss = Math.floor(left%60);
-  document.getElementById("fcName").textContent = emojiFor(cur)+" "+cur.name;
-  document.getElementById("fcTimer").textContent = mm+":"+pad(ss);
-  document.getElementById("fcRange").textContent = fmt12(cur.start)+" – "+fmt12(cur.end);
-  document.getElementById("fcBar").style.width = Math.min(100,(passed/total)*100)+"%";
+  const totalSec  = (toMin(cur.end)-toMin(cur.start))*60;
+  const passedSec = (nowMin - toMin(cur.start))*60;
+  const blockLeft = Math.max(0, totalSec - passedSec);
+  const CYC = 3600, FOC = 3000; /* 50 min focus + 10 min rest */
+
+  let phase = "task", remain = blockLeft;
+  if(breakUntil > Date.now()){
+    phase = "break";
+    remain = Math.min(blockLeft, (breakUntil - Date.now())/1000);
+  } else {
+    breakUntil = 0;
+    if(cur.cat==="Study" || cur.cat==="Work"){
+      const pos = passedSec % CYC;
+      if(pos < FOC){ phase = "focus"; remain = Math.min(blockLeft, FOC - pos); }
+      else         { phase = "rest";  remain = Math.min(blockLeft, CYC - pos); }
+    }
+  }
+  if(lastPhase && lastPhase !== phase) beep();
+  lastPhase = phase;
+
+  const resty = (phase==="rest" || phase==="break");
+  el.classList.toggle("rest", resty);
+  const cycleNum = Math.floor(passedSec / CYC) + 1;
+  $("fcLabel").textContent =
+    phase==="focus" ? "Focus · cycle "+cycleNum :
+    phase==="rest"  ? "Cycle rest · recharge" :
+    phase==="break" ? "Break · back soon" : "Focus mode";
+  $("fcName").textContent = emojiFor(cur)+" "+cur.name;
+  const mm = Math.floor(remain/60), ss = Math.floor(remain%60);
+  $("fcTimer").textContent = mm+":"+pad(ss);
+  $("fcRange").textContent = fmt12(cur.start)+" – "+fmt12(cur.end)+((phase==="focus"||phase==="rest")?" · 50/10 cycles":"");
+  $("fcBar").style.width = Math.min(100,(passedSec/totalSec)*100)+"%";
+  $("fcQuote").textContent = resty
+    ? "Rest for real: stand up, stretch, drink water. No scrolling."
+    : "Your phone is now a timer, nothing else. Put it down and do the work.";
+  $("fcBreak").style.display = "block";
+  $("fcBreak").textContent = (phase==="break") ? "▶ End break early" : "☕ Take a 10-min break";
 }
 
 /* ---------- PLAN ---------- */
@@ -645,7 +1095,7 @@ function renderPlan(){
   document.getElementById("planDayLabel").textContent = dayName(d);
   document.getElementById("planNote").textContent =
     planOffset===1
-      ? "Every night, build tomorrow before you sleep. Fixed classes are already in."
+      ? "Every night, build tomorrow before you sleep. Classes and prayer times are already in."
       : "Editing today's plan.";
   const blocks = blocksFor(d);
   const list = document.getElementById("planList");
@@ -654,7 +1104,7 @@ function renderPlan(){
     return;
   }
   list.innerHTML = blocks.map(b=>{
-    const fixed = b.cat==="Fixed";
+    const fixed = !!b.locked;
     const kind = b.repeat ? "routine" : "task";
     return `
     <div class="block">
