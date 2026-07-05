@@ -269,6 +269,18 @@
     font-family:"Archivo",sans-serif;font-weight:700;font-size:14px;cursor:pointer;
   }
 
+  /* ---------- prayer grid ---------- */
+  .prayer-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:6px}
+  .ptile{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:9px 2px;text-align:center;cursor:pointer;position:relative;
+  }
+  .ptile .pn{font-size:10.5px;font-weight:700;letter-spacing:.3px}
+  .ptile .pt{font-family:"Archivo",sans-serif;font-weight:800;font-size:12.5px;margin-top:2px;font-variant-numeric:tabular-nums}
+  .ptile .pc{height:14px;font-size:12px;color:var(--ok);font-weight:800}
+  .ptile.pdone{background:#E2F5EC;border-color:var(--ok)}
+  .ptile.pactive{border:2px solid #128A5E;background:#EAF7F0}
+  .ptile.ppassed{opacity:.5}
   /* ---------- AUTH ---------- */
   #auth{
     position:fixed;inset:0;z-index:60;background:var(--paper);
@@ -360,6 +372,8 @@
   <!-- ===== TODAY ===== -->
   <div class="view active" id="view-today">
     <div id="nowCard"></div>
+    <div class="section-label">🕌 Prayers · official times</div>
+    <div class="prayer-grid" id="prayerGrid"></div>
     <div class="section-label">Today's score</div>
     <div class="score-card">
       <div class="score-num" id="scoreNum">0%</div>
@@ -414,6 +428,7 @@
       </div>
     </form>
     <div class="section-label">Plan for <span id="planDayLabel"></span></div>
+    <p class="note" id="planPrayers"></p>
     <div id="planList"></div>
   </div>
 
@@ -765,8 +780,8 @@ const CAT_EMOJI = { Study:"📚", Work:"💼", Sport:"🏋️", Rest:"😌", Oth
 function emojiFor(b){ return b.emoji || CAT_EMOJI[b.cat] || "•"; }
 function routines(){ return store.get("routines") || []; }
 
-/* ---------- prayer times (calculated for Fes, Morocco — edit P_LAT/P_LON for another city) ---------- */
-const P_LAT = 34.0331, P_LON = -5.0003;
+/* ---------- prayer times — calibrated to the official Ministry sheet (Ifrane province) ---------- */
+const P_LAT = 33.5228, P_LON = -5.1106;
 const D2R = Math.PI/180, R2D = 180/Math.PI;
 function prayerTimes(d){
   const tz = -d.getTimezoneOffset()/60;
@@ -779,11 +794,12 @@ function prayerTimes(d){
   const asrAlt = R2D*Math.atan(1/(1+Math.tan(D2R*Math.abs(P_LAT-decl))));
   const haAsr = R2D*Math.acos((Math.sin(D2R*asrAlt) - Math.sin(D2R*P_LAT)*Math.sin(D2R*decl))/(Math.cos(D2R*P_LAT)*Math.cos(D2R*decl)))/15;
   const m = h => Math.round(h*60);
+  /* offsets tuned against the official Ministry timetable (±1 min) */
   return {
     Fajr:    m(dhuhr - ha(19)),
     Dhuhr:   m(dhuhr) + 5,
-    Asr:     m(dhuhr + haAsr),
-    Maghrib: m(dhuhr + ha(0.833)) + 3,
+    Asr:     m(dhuhr + haAsr) + 1,
+    Maghrib: m(dhuhr + ha(0.833)) + 8,
     Isha:    m(dhuhr + ha(17))
   };
 }
@@ -1015,11 +1031,25 @@ function renderToday(){
       </div>`;
   }
 
+  /* prayer grid — all five, always visible */
+  const prayers = blocks.filter(b=>b.prayer);
+  document.getElementById("prayerGrid").innerHTML = prayers.map(p=>{
+    const isDone = !!done[p.id];
+    const isAct  = ap && ap.id===p.id;
+    const missed = !isDone && (toMin(p.start)+45) <= nowMin;
+    return `<div class="ptile ${isDone?"pdone":""} ${isAct?"pactive":""} ${missed?"ppassed":""}" onclick="toggleDone('${key}','${p.id}')">
+      <div class="pn">${esc(p.name)}</div>
+      <div class="pt">${fmt12(p.start)}</div>
+      <div class="pc">${isDone?"✓":""}</div>
+    </div>`;
+  }).join("");
+
+  const tasks = blocks.filter(b=>!b.prayer);
   const list = document.getElementById("todayList");
-  if(!blocks.length){
+  if(!tasks.length){
     list.innerHTML = `<div class="empty">No tasks today. Open the Plan tab to add some.</div>`;
   } else {
-    list.innerHTML = blocks.map(b=>{
+    list.innerHTML = tasks.map(b=>{
       const past = toMin(b.end) <= nowMin;
       const cur = (ap && ap.id===b.id) || (!ap && current && current.id===b.id);
       const isDone = !!done[b.id];
@@ -1206,12 +1236,16 @@ function renderPlan(){
       ? "Every night, build tomorrow before you sleep. Classes and prayer times are already in."
       : "Editing today's plan.";
   const blocks = blocksFor(d);
+  const pts = blocks.filter(b=>b.prayer);
+  document.getElementById("planPrayers").innerHTML =
+    "🕌 " + pts.map(p=>"<b>"+esc(p.name)+"</b> "+fmt12(p.start)).join(" · ");
+  const shown = blocks.filter(b=>!b.prayer);
   const list = document.getElementById("planList");
-  if(!blocks.length){
+  if(!shown.length){
     list.innerHTML = `<div class="empty">Nothing here yet. Add your first task above.</div>`;
     return;
   }
-  list.innerHTML = blocks.map(b=>{
+  list.innerHTML = shown.map(b=>{
     const fixed = !!b.locked;
     const kind = b.repeat ? "routine" : "task";
     return `
