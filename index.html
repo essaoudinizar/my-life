@@ -30,12 +30,13 @@
     --radius:16px;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%}
+  html{height:100%}
+  body{min-height:100%}
   body{
     font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
     background:var(--paper);
     color:var(--ink);
-    padding-bottom:130px;
+    padding-bottom:calc(170px + env(safe-area-inset-bottom));
   }
 
   header{
@@ -269,6 +270,15 @@
     font-family:"Archivo",sans-serif;font-weight:700;font-size:14px;cursor:pointer;
   }
 
+  /* ---------- life happened row ---------- */
+  .life-row{display:flex;gap:7px;margin-bottom:6px}
+  .life-row button{
+    flex:1;padding:10px 4px;border-radius:12px;border:1px solid var(--line);
+    background:var(--card);font-weight:700;font-size:12px;color:var(--ink);
+    cursor:pointer;font-family:inherit;line-height:1.3;
+  }
+  .life-row button:active{background:var(--paper)}
+  .f-esc{font-size:13px;opacity:.85;margin-top:12px;font-weight:600}
   /* ---------- prayer grid ---------- */
   .prayer-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:6px}
   .ptile{
@@ -354,6 +364,22 @@
     cursor:pointer;font-family:inherit;
   }
   .pf-actions button.danger{color:var(--danger)}
+
+  /* ---------- dark mode ---------- */
+  body.dark{
+    --paper:#0E1420;
+    --card:#18202F;
+    --ink:#E9EEF6;
+    --ink-soft:#93A3BC;
+    --line:#283450;
+  }
+  body.dark .ptile.pdone{background:#12301F}
+  body.dark .ptile.pactive{background:#0F2A1C}
+  body.dark .streak-chip{background:#3A2A12;border-color:#7A5A22;color:#F5C078}
+  body.dark .auth-google{background:var(--card);color:var(--ink);border-color:var(--line)}
+  body.dark .pf-badge.ok{background:#12301F}
+  body.dark .pf-badge.warn{background:#3A2A12;color:#F5C078}
+  body.dark .now-card.free{background:linear-gradient(150deg,#2A3645,#161F30)}
 </style>
 </head>
 <body>
@@ -363,6 +389,7 @@
   <div class="head-right">
     <span class="streak-chip" id="streakChip" style="display:none"></span>
     <span id="headerDate"></span>
+    <button class="bell" id="themeBtn" onclick="toggleTheme()" title="Light / dark">🌙</button>
     <button class="bell" id="bellBtn" onclick="toggleAlerts()" title="Sound alerts">🔕</button>
   </div>
 </header>
@@ -374,6 +401,13 @@
     <div id="nowCard"></div>
     <div class="section-label">🕌 Prayers · official times</div>
     <div class="prayer-grid" id="prayerGrid"></div>
+    <div class="section-label">⚡ Life happened?</div>
+    <div class="life-row">
+      <button onclick="shiftRest(30)">Shift rest<br>+30 min</button>
+      <button onclick="shiftRest(60)">Shift rest<br>+1 hour</button>
+      <button onclick="rescueToTomorrow()">🚑 Unfinished<br>→ tomorrow</button>
+    </div>
+    <p class="note" id="lifeMsg" style="display:none"></p>
     <div class="section-label">Today's score</div>
     <div class="score-card">
       <div class="score-num" id="scoreNum">0%</div>
@@ -430,6 +464,8 @@
     <div class="section-label">Plan for <span id="planDayLabel"></span></div>
     <p class="note" id="planPrayers"></p>
     <div id="planList"></div>
+    <div class="section-label">↻ Weekly routines</div>
+    <div id="routineList"></div>
   </div>
 
   <!-- ===== STATS ===== -->
@@ -462,6 +498,7 @@
     </div>
     <p class="note">Your plans, scores and streak are saved to your account and sync automatically on every device where you sign in.</p>
   </div>
+  <div style="height:56px"></div>
 </main>
 
 <nav>
@@ -480,6 +517,7 @@
   <div class="f-range" id="fcRange"></div>
   <div class="bar"><i id="fcBar"></i></div>
   <div class="f-quote" id="fcQuote">Your phone is now a timer, nothing else. Put it down and do the work.</div>
+  <div class="f-esc" id="fcEsc"></div>
   <button class="f-exit" id="fcPrayed" onclick="prayedNow()" style="display:none">🕌 I finished praying</button>
   <button class="f-exit" id="fcBreak" onclick="toggleBreak()">☕ Take a 10-min break</button>
   <button class="f-exit" onclick="exitFocus()">Exit focus</button>
@@ -575,6 +613,7 @@ function persist(){
 }
 function renderAll(){
   alertsOn = !!store.get("alertsOn"); updateBell();
+  applyTheme();
   renderToday();
   if(document.getElementById("view-plan").classList.contains("active")) renderPlan();
   if(document.getElementById("view-stats").classList.contains("active")) renderStats();
@@ -762,11 +801,7 @@ async function resendVerify(){
 /* ---------- (storage now lives in the cloud module above) ---------- */
 
 /* ---------- fixed weekly events (0=Sun ... 6=Sat) ---------- */
-const FIXED = [
-  { id:"f-class",     name:"Class",       start:"10:00", end:"11:20", days:[1,2,3,4,5], cat:"Fixed", locked:true, emoji:"🎓" },
-  { id:"f-breakfast", name:"Breakfast",   start:"11:30", end:"12:30", days:[1,2,3,4,5], cat:"Fixed", locked:true, emoji:"🍳" },
-  { id:"f-lab",       name:"Lab session", start:"17:00", end:"19:00", days:[1,3],       cat:"Fixed", locked:true, emoji:"🔬" }
-];
+const FIXED = []; /* no hardcoded events — everyone builds their own weekly routine with Repeat */
 
 /* ---------- helpers ---------- */
 const pad = n => String(n).padStart(2,"0");
@@ -811,10 +846,11 @@ function prayerBlocks(d){
     cat:"Prayer", emoji:"🕌", locked:true, prayer:true
   }));
 }
+const DAY_ABBR = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 function catLabel(b){
   if(b.cat==="Fixed") return "Fixed · every week";
   if(b.cat==="Prayer") return "Prayer · at "+fmt12(b.start);
-  return b.repeat ? b.cat+" · weekly" : b.cat;
+  return b.repeat ? b.cat+" · "+(b.days||[]).map(d=>DAY_ABBR[d]).join(" ") : b.cat;
 }
 
 function blocksFor(d){
@@ -834,6 +870,16 @@ function updateBell(){
   const b = document.getElementById("bellBtn");
   b.textContent = alertsOn ? "🔔" : "🔕";
   b.classList.toggle("on", alertsOn);
+}
+function applyTheme(){
+  const t = store.get("theme") || "light";
+  document.body.classList.toggle("dark", t === "dark");
+  const b = document.getElementById("themeBtn");
+  if(b) b.textContent = (t === "dark") ? "☀️" : "🌙";
+}
+function toggleTheme(){
+  store.set("theme", (store.get("theme") === "dark") ? "light" : "dark");
+  applyTheme();
 }
 function toggleAlerts(){
   alertsOn = !alertsOn;
@@ -915,6 +961,74 @@ function prayedNow(){
   renderToday();
   updateFocus();
 }
+/* ---------- "life happened" replan tools ---------- */
+function lifeMsg(t){
+  const e = document.getElementById("lifeMsg");
+  e.textContent = t; e.style.display = t ? "block" : "none";
+  clearTimeout(lifeMsg._t);
+  if(t) lifeMsg._t = setTimeout(()=>{ e.style.display = "none"; }, 6000);
+}
+function shiftRest(mins){
+  const now = new Date(), key = dateKey(now);
+  const nowMin = now.getHours()*60 + now.getMinutes();
+  const tasks = store.get("tasks:"+key) || [];
+  let n = 0;
+  tasks.forEach(t=>{
+    if(toMin(t.end) > nowMin){
+      const ns = Math.min(toMin(t.start)+mins, 1409);
+      const ne = Math.min(toMin(t.end)+mins, 1439);
+      if(ne > ns){ t.start = minToHM(ns); t.end = minToHM(ne); n++; }
+    }
+  });
+  store.set("tasks:"+key, tasks);
+  renderToday();
+  lifeMsg(n ? "⚡ Shifted "+n+" task"+(n>1?"s":"")+" by "+mins+" min. Classes & prayers stay fixed."
+            : "No upcoming tasks of yours to shift — classes & prayers are fixed.");
+}
+function moveToTomorrow(id){
+  const now = new Date(), key = dateKey(now);
+  const tm = new Date(); tm.setDate(tm.getDate()+1);
+  const tkey = dateKey(tm);
+  const tasks = store.get("tasks:"+key) || [];
+  const i = tasks.findIndex(t=>t.id===id);
+  if(i < 0) return;
+  const t = tasks.splice(i,1)[0];
+  const tomorrow = store.get("tasks:"+tkey) || [];
+  tomorrow.push(t);
+  store.set("tasks:"+key, tasks);
+  store.set("tasks:"+tkey, tomorrow);
+  renderToday();
+  lifeMsg('🚑 "'+t.name+'" moved to tomorrow at '+fmt12(t.start)+".");
+}
+function rescueToTomorrow(){
+  const now = new Date(), key = dateKey(now);
+  const done = doneMap(key);
+  const tasks = store.get("tasks:"+key) || [];
+  const undone = tasks.filter(t=>!done[t.id]);
+  if(!undone.length){ lifeMsg("Nothing to rescue — all your own tasks are done ✓"); return; }
+  const tm = new Date(); tm.setDate(tm.getDate()+1);
+  const tkey = dateKey(tm);
+  const tomorrow = store.get("tasks:"+tkey) || [];
+  undone.forEach(t=>tomorrow.push(t));
+  store.set("tasks:"+key, tasks.filter(t=>done[t.id]));
+  store.set("tasks:"+tkey, tomorrow);
+  renderToday();
+  lifeMsg("🚑 "+undone.length+" unfinished task"+(undone.length>1?"s":"")+" moved to tomorrow. Fresh start.");
+}
+
+/* ---------- distraction counter (counts escapes during focus) ---------- */
+document.addEventListener("visibilitychange", ()=>{
+  try{
+    if(document.visibilityState === "hidden"){
+      const f = document.getElementById("focus");
+      if(f && f.classList.contains("show") && (lastPhase==="focus" || lastPhase==="task")){
+        const key = dateKey(new Date());
+        store.set("distract:"+key, (store.get("distract:"+key)||0) + 1);
+      }
+    }
+  }catch(e){}
+});
+
 /* ---------- focus mode themes + rotating motivation ---------- */
 const FOCUS_THEMES = {
   Study:  { emoji:"📚", quotes:["Future you is watching. Make him proud.","One page at a time — that's how everything is learned.","The exam doesn't care about your excuses. Neither do you today.","Deep focus now, free mind later."] },
@@ -1060,6 +1174,7 @@ function renderToday(){
           <div class="block-name">${emojiFor(b)} ${esc(b.name)}${b.repeat?" ↻":""}</div>
           <div class="block-cat cat-${b.cat}">${catLabel(b)}</div>
         </div>
+        ${(!b.locked && !b.repeat) ? `<button class="mini-btn" title="Move to tomorrow" onclick="moveToTomorrow('${b.id}')">→</button>` : ""}
         <button class="check ${isDone?"done":""}" onclick="toggleDone('${key}','${b.id}')" aria-label="Mark done">${isDone?"✓":""}</button>
       </div>`;
     }).join("");
@@ -1075,8 +1190,10 @@ function renderToday(){
   const pct = totalMin ? Math.round(doneMin/totalMin*100) : 0;
   document.getElementById("scoreNum").textContent = pct+"%";
   document.getElementById("scoreBar").style.width = pct+"%";
+  const escN = store.get("distract:"+key) || 0;
   document.getElementById("scoreHint").textContent =
-    totalMin ? `${doneMin} of ${totalMin} planned minutes completed` : "Plan your day to start scoring";
+    (totalMin ? `${doneMin} of ${totalMin} planned minutes completed` : "Plan your day to start scoring")
+    + (escN ? ` · 📵 ${escN} escape${escN>1?"s":""}` : "");
   if(totalMin){
     const scores = store.get("scores") || {};
     scores[key] = pct;
@@ -1138,6 +1255,7 @@ function updateFocus(){
     $("fcBar").style.width = "100%";
     $("fcPrayed").style.display = "block";
     $("fcBreak").style.display = "none";
+    $("fcEsc").textContent = "";
     if(lastPhase !== "prayer") beep();
     lastPhase = "prayer";
     return;
@@ -1155,6 +1273,7 @@ function updateFocus(){
     $("fcQuote").textContent = "Take a breath. You earned it.";
     $("fcBar").style.width = "100%";
     $("fcBreak").style.display = "none";
+    $("fcEsc").textContent = "";
     return;
   }
 
@@ -1199,6 +1318,8 @@ function updateFocus(){
     : rotQuote(cur.cat);
   $("fcBreak").style.display = "block";
   $("fcBreak").textContent = (phase==="break") ? "▶ End break early" : "☕ Take a 10-min break";
+  const escN = store.get("distract:"+key) || 0;
+  $("fcEsc").textContent = escN ? "📵 Escapes today: "+escN+" — stay here this time." : "";
 }
 
 /* ---------- PLAN ---------- */
@@ -1233,7 +1354,7 @@ function renderPlan(){
   document.getElementById("planDayLabel").textContent = dayName(d);
   document.getElementById("planNote").textContent =
     planOffset===1
-      ? "Every night, build tomorrow before you sleep. Classes and prayer times are already in."
+      ? "Every night, build tomorrow before you sleep. Prayer times are in automatically — for classes or anything weekly, check Repeat and pick your days."
       : "Editing today's plan.";
   const blocks = blocksFor(d);
   const pts = blocks.filter(b=>b.prayer);
@@ -1241,6 +1362,7 @@ function renderPlan(){
     "🕌 " + pts.map(p=>"<b>"+esc(p.name)+"</b> "+fmt12(p.start)).join(" · ");
   const shown = blocks.filter(b=>!b.prayer);
   const list = document.getElementById("planList");
+  renderRoutines();
   if(!shown.length){
     list.innerHTML = `<div class="empty">Nothing here yet. Add your first task above.</div>`;
     return;
@@ -1261,6 +1383,26 @@ function renderPlan(){
            <button class="mini-btn del" onclick="delItem('${kind}','${b.id}','${key}')" aria-label="Delete">×</button>`}
     </div>`;
   }).join("");
+}
+
+function renderRoutines(){
+  const rts = routines();
+  const box = document.getElementById("routineList");
+  if(!rts.length){
+    box.innerHTML = `<div class="empty">No weekly routines yet. When adding a task, check "Repeat every week" and pick its days — it will appear on those days automatically, and live here so you can change or stop it anytime.</div>`;
+    return;
+  }
+  const key = dateKey(planDate());
+  box.innerHTML = rts.map(b=>`
+    <div class="block">
+      <div class="block-time">${fmt12(b.start)}<br>${fmt12(b.end)}</div>
+      <div class="block-info">
+        <div class="block-name">${emojiFor(b)} ${esc(b.name)} ↻</div>
+        <div class="block-cat cat-${b.cat}">${(b.days||[]).map(d=>DAY_ABBR[d]).join(" · ")}</div>
+      </div>
+      <button class="mini-btn" onclick="startEdit('routine','${b.id}','${key}')" aria-label="Edit days or times">✎</button>
+      <button class="mini-btn del" onclick="delItem('routine','${b.id}','${key}')" aria-label="Stop repeating">×</button>
+    </div>`).join("");
 }
 
 function startEdit(kind,id,key){
@@ -1358,7 +1500,7 @@ function submitTask(e){
 
 function delItem(kind,id,key){
   if(kind==="routine"){
-    if(!confirm("Delete this weekly task from ALL days?")) return;
+    if(!confirm("Stop this weekly activity? It will be removed from all its days.")) return;
     store.set("routines", routines().filter(r=>r.id!==id));
   } else {
     store.set("tasks:"+key, (store.get("tasks:"+key)||[]).filter(t=>t.id!==id));
@@ -1367,6 +1509,7 @@ function delItem(kind,id,key){
   renderPlan();
   renderToday();
 }
+/* renderPlan calls renderRoutines, so the manager stays in sync */
 
 /* ---------- STATS ---------- */
 function renderStats(){
@@ -1403,6 +1546,7 @@ setInterval(()=>{
 }, 1000);
 
 updateBell();
+applyTheme();
 renderToday();
 </script>
 </body>
