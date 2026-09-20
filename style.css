@@ -1,1 +1,349 @@
+*{
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
 
+
+body{
+    margin:0;
+    background:#f2f5f8;
+    color:#222;
+}
+
+
+header{
+    background:#111827;
+    color:white;
+    text-align:center;
+    padding:25px;
+}
+
+
+header h1{
+    margin:0;
+    font-size:32px;
+}
+
+
+nav{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:10px;
+    padding:15px;
+    background:white;
+}
+
+
+nav button{
+    border:none;
+    padding:12px 18px;
+    border-radius:10px;
+    cursor:pointer;
+    background:#2563eb;
+    color:white;
+    font-size:15px;
+}
+
+
+nav button:hover{
+    opacity:.85;
+}
+
+
+main{
+    max-width:1000px;
+    margin:auto;
+    padding:20px;
+}
+
+
+.page{
+    display:none;
+}
+
+
+.page.active{
+    display:block;
+}
+
+
+.card{
+    background:white;
+    border-radius:15px;
+    padding:25px;
+    margin-bottom:20px;
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+}
+
+
+input,
+select,
+textarea{
+
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border-radius:8px;
+    border:1px solid #ccc;
+    font-size:16px;
+
+}
+
+
+textarea{
+    height:120px;
+    resize:none;
+}
+
+
+button{
+
+    padding:12px 20px;
+    border:none;
+    border-radius:10px;
+    background:#16a34a;
+    color:white;
+    cursor:pointer;
+    font-size:16px;
+}
+
+
+button:hover{
+    opacity:.85;
+}
+
+
+
+#lifeScore{
+
+    font-size:50px;
+    font-weight:bold;
+    text-align:center;
+    color:#16a34a;
+
+}
+
+
+
+#workoutResult,
+#nutritionResult,
+#coachMessage{
+
+    background:#f8fafc;
+    padding:15px;
+    border-radius:10px;
+    margin-top:15px;
+
+}
+
+
+
+.exercise{
+
+    background:#eef2ff;
+    padding:15px;
+    margin:10px 0;
+    border-radius:10px;
+
+}
+
+
+
+@media(max-width:600px){
+
+    nav{
+
+        flex-direction:column;
+
+    }
+
+
+    nav button{
+
+        width:100%;
+
+    }
+
+
+    header h1{
+
+        font-size:24px;
+
+    }
+
+}*{
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+
+body{
+    margin:0;
+    background:#f2f5f8;
+    color:#222;
+}
+
+
+header{
+    background:#111827;
+    color:white;
+    text-align:center;
+    padding:25px;
+}
+
+
+header h1{
+    margin:0;
+    font-size:32px;
+}
+
+
+nav{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:10px;
+    padding:15px;
+    background:white;
+}
+
+
+nav button{
+    border:none;
+    padding:12px 18px;
+    border-radius:10px;
+    cursor:pointer;
+    background:#2563eb;
+    color:white;
+    font-size:15px;
+}
+
+
+nav button:hover{
+    opacity:.85;
+}
+
+
+main{
+    max-width:1000px;
+    margin:auto;
+    padding:20px;
+}
+
+
+.page{
+    display:none;
+}
+
+
+.page.active{
+    display:block;
+}
+
+
+.card{
+    background:white;
+    border-radius:15px;
+    padding:25px;
+    margin-bottom:20px;
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+}
+
+
+input,
+select,
+textarea{
+
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border-radius:8px;
+    border:1px solid #ccc;
+    font-size:16px;
+
+}
+
+
+textarea{
+    height:120px;
+    resize:none;
+}
+
+
+button{
+
+    padding:12px 20px;
+    border:none;
+    border-radius:10px;
+    background:#16a34a;
+    color:white;
+    cursor:pointer;
+    font-size:16px;
+}
+
+
+button:hover{
+    opacity:.85;
+}
+
+
+
+#lifeScore{
+
+    font-size:50px;
+    font-weight:bold;
+    text-align:center;
+    color:#16a34a;
+
+}
+
+
+
+#workoutResult,
+#nutritionResult,
+#coachMessage{
+
+    background:#f8fafc;
+    padding:15px;
+    border-radius:10px;
+    margin-top:15px;
+
+}
+
+
+
+.exercise{
+
+    background:#eef2ff;
+    padding:15px;
+    margin:10px 0;
+    border-radius:10px;
+
+}
+
+
+
+@media(max-width:600px){
+
+    nav{
+
+        flex-direction:column;
+
+    }
+
+
+    nav button{
+
+        width:100%;
+
+    }
+
+
+    header h1{
+
+        font-size:24px;
+
+    }
+
+}
